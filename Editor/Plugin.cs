@@ -145,7 +145,7 @@ namespace WakaTime {
             var heartbeatJSON = JsonUtility.ToJson(heartbeat);
 
             var uri = URL_PREFIX + "users/current/heartbeats?api_key=" + _apiKey;
-            using var request = UnityWebRequest.Post(uri, string.Empty);
+            var request = UnityWebRequest.Post(uri, string.Empty);
             request.disposeUploadHandlerOnDispose = true;
             request.disposeDownloadHandlerOnDispose = true;
             request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(heartbeatJSON));
@@ -158,6 +158,7 @@ namespace WakaTime {
                     {
                         Debug.LogWarning(
                             "<WakaTime> Network is unreachable. Consider disabling completely if you're working offline");
+                        request.Dispose();
                         return;
                     }
 
@@ -185,6 +186,8 @@ namespace WakaTime {
                         if (_debug) Debug.Log("<WakaTime> Sent heartbeat!");
                         _lastHeartbeat = response.data;
                     }
+                    
+                    request.Dispose();
                 };
         }
 

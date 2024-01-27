@@ -124,57 +124,69 @@ namespace WakaTime {
       }
     }
 
-    static void SendHeartbeat(bool fromSave = false) {
-      if (_debug) Debug.Log("<WakaTime> Sending heartbeat...");
+    static void SendHeartbeat(bool fromSave = false)
+        {
+            if (_debug) 
+                Debug.Log("<WakaTime> Sending heartbeat...");
 
-      var currentScene = EditorSceneManager.GetActiveScene().path;
-      var file = currentScene != string.Empty
-        ? Application.dataPath + "/" + currentScene.Substring("Assets/".Length)
-        : string.Empty;
+            var currentScene = EditorSceneManager.GetActiveScene().path;
+            var file = currentScene != string.Empty
+                ? Application.dataPath + "/" + currentScene.Substring("Assets/".Length)
+                : string.Empty;
 
-      var heartbeat = new Heartbeat(file, fromSave);
-      if ((heartbeat.time - _lastHeartbeat.time < HEARTBEAT_COOLDOWN) && !fromSave &&
-        (heartbeat.entity == _lastHeartbeat.entity)) {
-        if (_debug) Debug.Log("<WakaTime> Skip this heartbeat");
-        return;
-      }
-
-      var heartbeatJSON = JsonUtility.ToJson(heartbeat);
-
-      var request = UnityWebRequest.Post(URL_PREFIX + "users/current/heartbeats?api_key=" + _apiKey, string.Empty);
-      request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(heartbeatJSON));
-      request.SetRequestHeader("Content-Type", "application/json");
-
-      request.SendWebRequest().completed +=
-        operation => {
-          if (request.downloadHandler.text == string.Empty) {
-            Debug.LogWarning(
-              "<WakaTime> Network is unreachable. Consider disabling completely if you're working offline");
-            return;
-          }
-
-          if (_debug)
-            Debug.Log("<WakaTime> Got response\n" + request.downloadHandler.text);
-          var response =
-            JsonUtility.FromJson<Response<HeartbeatResponse>>(
-              request.downloadHandler.text);
-
-          if (response.error != null) {
-            if (response.error == "Duplicate") {
-              if (_debug) Debug.LogWarning("<WakaTime> Duplicate heartbeat");
+            var heartbeat = new Heartbeat(file, fromSave);
+            if ((heartbeat.time - _lastHeartbeat.time < HEARTBEAT_COOLDOWN) && !fromSave &&
+                (heartbeat.entity == _lastHeartbeat.entity))
+            {
+                if (_debug) Debug.Log("<WakaTime> Skip this heartbeat");
+                return;
             }
-            else {
-              Debug.LogError(
-                "<WakaTime> Failed to send heartbeat to WakaTime!\n" +
-                response.error);
-            }
-          }
-          else {
-            if (_debug) Debug.Log("<WakaTime> Sent heartbeat!");
-            _lastHeartbeat = response.data;
-          }
-        };
-    }
+
+            var heartbeatJSON = JsonUtility.ToJson(heartbeat);
+
+            var uri = URL_PREFIX + "users/current/heartbeats?api_key=" + _apiKey;
+            using var request = UnityWebRequest.Post(uri, string.Empty);
+            request.disposeUploadHandlerOnDispose = true;
+            request.disposeDownloadHandlerOnDispose = true;
+            request.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(heartbeatJSON));
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            request.SendWebRequest().completed +=
+                operation =>
+                {
+                    if (request.downloadHandler.text == string.Empty)
+                    {
+                        Debug.LogWarning(
+                            "<WakaTime> Network is unreachable. Consider disabling completely if you're working offline");
+                        return;
+                    }
+
+                    if (_debug)
+                        Debug.Log("<WakaTime> Got response\n" + request.downloadHandler.text);
+                    var response =
+                        JsonUtility.FromJson<Response<HeartbeatResponse>>(
+                            request.downloadHandler.text);
+
+                    if (response.error != null)
+                    {
+                        if (response.error == "Duplicate")
+                        {
+                            if (_debug) Debug.LogWarning("<WakaTime> Duplicate heartbeat");
+                        }
+                        else
+                        {
+                            Debug.LogError(
+                                "<WakaTime> Failed to send heartbeat to WakaTime!\n" +
+                                response.error);
+                        }
+                    }
+                    else
+                    {
+                        if (_debug) Debug.Log("<WakaTime> Sent heartbeat!");
+                        _lastHeartbeat = response.data;
+                    }
+                };
+        }
 
     [DidReloadScripts]
     static void OnScriptReload() {

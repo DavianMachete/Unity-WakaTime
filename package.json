@@ -4,6 +4,12 @@
   "version": "0.0.1",
   "unity": "2020.1",
   "description": "WakaTime plugin for Unity",
+  "author" :
+  {
+	"name": "Davit Harutyunyan",
+	"email": "David.unitydev@gmail.com",
+	"url": ""
+  },
   "keywords": [
     "unity",
     "wakatime",

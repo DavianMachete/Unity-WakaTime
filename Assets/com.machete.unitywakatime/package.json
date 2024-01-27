@@ -1,0 +1,15 @@
+{
+  "name": "com.machete.unitywakatime",
+  "displayName": "Unity WakaTime",
+  "version": "0.0.1",
+  "unity": "2020.1",
+  "description": "WakaTime plugin for Unity",
+  "keywords": [
+    "unity",
+    "wakatime",
+    "stats",
+    "tracker",
+    "programming"
+  ],
+  "category": "Productivity"
+}

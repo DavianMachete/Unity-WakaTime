@@ -28,6 +28,9 @@ namespace WakaTime {
     private const string URL_PREFIX = "https://api.wakatime.com/api/v1/";
     private const int HEARTBEAT_COOLDOWN = 120;
 
+    private const string WARNING_DUPLICATE_KEY = "Duplicate";
+    private const string WARNING_TOO_MANY_KEY = "Too many recent heartbeats.";
+
     private static HeartbeatResponse _lastHeartbeat;
 
     static Plugin() {
@@ -170,9 +173,11 @@ namespace WakaTime {
 
                     if (response.error != null)
                     {
-                        if (response.error == "Duplicate")
+                        if (response.error == WARNING_DUPLICATE_KEY ||
+                            response.error == WARNING_TOO_MANY_KEY)
                         {
-                            if (_debug) Debug.LogWarning("<WakaTime> Duplicate heartbeat");
+                            if (_debug) 
+                                Debug.LogWarning($"<WakaTime> {response.error}");
                         }
                         else
                         {
